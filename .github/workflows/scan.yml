@@ -40,4 +40,4 @@ jobs:
           force_orphan: true
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
-          commit_message: 'scan: IV report ${{ github.event.head_commit.message || "manual trigger" }}'
+          commit_message: 'scan: IV report auto-update'
