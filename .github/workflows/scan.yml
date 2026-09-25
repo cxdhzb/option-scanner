@@ -28,7 +28,6 @@ jobs:
       - name: Run IV Scanner
         run: |
           python main.py --output reports/index.html
-        working-directory: option-scanner
         env:
           PYTHONIOENCODING: utf-8
 
@@ -36,7 +35,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./option-scanner/reports
+          publish_dir: ./reports
           publish_branch: gh-pages
           force_orphan: true
           user_name: 'github-actions[bot]'
