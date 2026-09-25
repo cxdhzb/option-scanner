@@ -1,0 +1,44 @@
+name: Daily IV Scan
+
+on:
+  schedule:
+    # 北京时间 15:30 = UTC 07:30 (收盘后30分钟)
+    - cron: '30 7 * * 1-5'
+  workflow_dispatch:  # 手动触发
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run IV Scanner
+        run: |
+          python main.py --output reports/index.html
+        working-directory: option-scanner
+        env:
+          PYTHONIOENCODING: utf-8
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./option-scanner/reports
+          publish_branch: gh-pages
+          force_orphan: true
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'scan: IV report ${{ github.event.head_commit.message || "manual trigger" }}'
