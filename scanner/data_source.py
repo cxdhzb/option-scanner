@@ -13,8 +13,10 @@
 """
 import re
 import time
+import json
 import logging
 from datetime import datetime, timedelta
+from pathlib import Path
 
 import akshare as ak
 import pandas as pd
@@ -132,6 +134,85 @@ def get_trade_date(offset_days: int = 1) -> str:
     while d.weekday() >= 5:
         d -= timedelta(days=1)
     return d.strftime("%Y%m%d")
+
+
+# ═══════════════════════════════════════════════════════════════
+# 合约代码解析与近远月分类
+# ═══════════════════════════════════════════════════════════════
+
+NEAR_TERM_CUTOFF = 35  # 近远月分界线：35天
+
+
+def parse_option_contract(code: str) -> dict:
+    """解析期权合约代码，提取品种、到期日、类型、行权价
+
+    支持格式:
+    - CZCE: "SR105C6200", "CF2501C17000", "AP105C9000"
+    - SHFE/DCE: "m2509-C-3200", "cu2501C60000", "au2502C580"
+    - GFEX: "si2501C12000", "lc2501C100000"
+    """
+    if not code:
+        return {"raw": "", "product": "", "expiry_date": None,
+                "option_type": "", "strike": 0.0}
+    code = str(code).strip().upper()
+    result = {"raw": code, "product": "", "expiry_date": None,
+              "option_type": "", "strike": 0.0}
+
+    # SHFE/DCE格式: product+4位expiry+C/P+strike (可能有横杠)
+    m = re.match(r'^([A-Za-z]+)(\d{4})[-]?([CP])[-]?(\d+\.?\d*)$', code)
+    if m:
+        result["product"] = m.group(1).lower()
+        ym = m.group(2)
+        result["option_type"] = "call" if m.group(3) == "C" else "put"
+        result["strike"] = float(m.group(4))
+        try:
+            y = 2000 + int(ym[:2])
+            mth = int(ym[2:])
+            result["expiry_date"] = datetime(y, mth, 1)
+        except (ValueError, IndexError):
+            pass
+        return result
+
+    # CZCE格式: product+3or4位expiry+C/P+strike
+    m = re.match(r'^([A-Za-z]+)(\d{3,4})([CP])(\d+\.?\d*)$', code)
+    if m:
+        result["product"] = m.group(1).lower()
+        es = m.group(2)
+        result["option_type"] = "call" if m.group(3) == "C" else "put"
+        result["strike"] = float(m.group(4))
+        try:
+            if len(es) == 3:
+                y = 2020 + int(es[0])
+                mth = int(es[1:3])
+            else:
+                y = 2000 + int(es[:2])
+                mth = int(es[2:])
+            result["expiry_date"] = datetime(y, mth, 1)
+        except (ValueError, IndexError):
+            pass
+        return result
+
+    return result
+
+
+def calc_days_to_expiry(code: str, ref_date: datetime = None) -> int:
+    """计算合约距到期日的天数"""
+    if ref_date is None:
+        ref_date = datetime.now()
+    info = parse_option_contract(code)
+    if info.get("expiry_date") is None:
+        return -1
+    delta = info["expiry_date"] - ref_date
+    return max(0, delta.days)
+
+
+def classify_term(days_to_expiry: int) -> str:
+    """判断近月/远月"""
+    if days_to_expiry < 0:
+        return "已到期"
+    if days_to_expiry <= NEAR_TERM_CUTOFF:
+        return "近月"
+    return "远月"
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -349,14 +430,221 @@ def scan_dce(trade_date: str) -> list[dict]:
 
 
 # ═══════════════════════════════════════════════════════════════
+# 合约级数据获取（用于十倍合约筛选）
+# ═══════════════════════════════════════════════════════════════
+
+def fetch_czce_contracts_detail(symbol: str, trade_date: str) -> list[dict]:
+    """获取郑商所品种的合约级详细数据（含IV、DELTA、行权价、权利金）"""
+    df = fetch_czce_quotes(symbol, trade_date)
+    if df.empty:
+        return []
+    contracts = []
+    for _, row in df.iterrows():
+        code = str(row.get("合约代码", ""))
+        if not code or len(code) < 5:
+            continue
+        info = parse_option_contract(code)
+        iv = pd.to_numeric(row.get("隐含波动率"), errors="coerce")
+        delta = pd.to_numeric(row.get("DELTA"), errors="coerce")
+        premium_cols = ["收盘价", "结算价", "权利金", "期权收盘价"]
+        premium = None
+        for col in premium_cols:
+            if col in row.index:
+                premium = pd.to_numeric(row.get(col), errors="coerce")
+                break
+        vol_col = "成交量(手)" if "成交量(手)" in row.index else "成交量"
+        oi_col = "持仓量" if "持仓量" in row.index else "持仓量"
+        volume = int(pd.to_numeric(row.get(vol_col, 0), errors="coerce"))
+        open_interest = int(pd.to_numeric(row.get(oi_col, 0), errors="coerce"))
+        bid_col = "买价" if "买价" in row.index else None
+        ask_col = "卖价" if "卖价" in row.index else None
+        bid = pd.to_numeric(row.get(bid_col), errors="coerce") if bid_col else None
+        ask = pd.to_numeric(row.get(ask_col), errors="coerce") if ask_col else None
+        spread = round(float(ask - bid), 2) if (bid and ask and not pd.isna(bid) and not pd.isna(ask)) else None
+        base = _product_base_name(symbol)
+        dte = calc_days_to_expiry(code)
+        contracts.append({
+            "contract_code": code,
+            "product_name": base, "product_code": CN2CODE.get(base, info.get("product", "")),
+            "exchange": "CZCE", "option_type": info.get("option_type", ""),
+            "strike": info.get("strike", 0), "expiry_date": info.get("expiry_date"),
+            "days_to_expiry": dte, "term": classify_term(dte),
+            "iv": round(float(iv), 2) if not pd.isna(iv) else None,
+            "delta": round(float(delta), 4) if not pd.isna(delta) else None,
+            "premium": round(float(premium), 2) if premium and not pd.isna(premium) else None,
+            "bid": round(float(bid), 2) if bid and not pd.isna(bid) else None,
+            "ask": round(float(ask), 2) if ask and not pd.isna(ask) else None,
+            "bid_ask_spread": spread,
+            "volume": volume, "open_interest": open_interest, "trade_date": trade_date,
+        })
+    return contracts
+
+
+def fetch_shfe_contracts_detail(symbol: str, trade_date: str) -> list[dict]:
+    """获取上期所品种的合约级详细数据（含IV，无DELTA）"""
+    quotes_df = fetch_shfe_quotes(symbol, trade_date)
+    iv_df = fetch_shfe_iv(symbol, trade_date)
+    if quotes_df.empty:
+        return []
+    # 构建IV映射: 合约系列前缀 -> IV
+    iv_map = {}
+    if not iv_df.empty:
+        series_col = next((c for c in ["合约系列", "合约代码", "系列"] if c in iv_df.columns), None)
+        if series_col:
+            for _, row in iv_df.iterrows():
+                key = str(row.get(series_col, "")).strip().lower()
+                if key and "iv_pct" in row:
+                    iv_map[key] = float(row.get("iv_pct", 0))
+    contracts = []
+    for _, row in quotes_df.iterrows():
+        code = str(row.get("合约代码", ""))
+        if not code or len(code) < 5:
+            continue
+        info = parse_option_contract(code)
+        # 匹配IV：用品种+到期月份前缀匹配
+        iv_val = None
+        pfx = info.get("product", "")
+        for key, iv in iv_map.items():
+            if pfx and pfx in key:
+                iv_val = iv
+                break
+        premium_cols = ["收盘价", "结算价", "权利金", "期权收盘价"]
+        premium = None
+        for col in premium_cols:
+            if col in row.index:
+                premium = pd.to_numeric(row.get(col), errors="coerce")
+                break
+        vol_col = "成交量" if "成交量" in row.index else None
+        oi_col = "持仓量" if "持仓量" in row.index else None
+        volume = int(pd.to_numeric(row.get(vol_col, 0), errors="coerce")) if vol_col else 0
+        open_interest = int(pd.to_numeric(row.get(oi_col, 0), errors="coerce")) if oi_col else 0
+        base = _product_base_name(symbol)
+        dte = calc_days_to_expiry(code)
+        contracts.append({
+            "contract_code": code,
+            "product_name": base, "product_code": CN2CODE.get(base, info.get("product", "")),
+            "exchange": "SHFE", "option_type": info.get("option_type", ""),
+            "strike": info.get("strike", 0), "expiry_date": info.get("expiry_date"),
+            "days_to_expiry": dte, "term": classify_term(dte),
+            "iv": round(iv_val, 2) if iv_val else None,
+            "delta": None,
+            "premium": round(float(premium), 2) if premium and not pd.isna(premium) else None,
+            "bid": None, "ask": None, "bid_ask_spread": None,
+            "volume": volume, "open_interest": open_interest, "trade_date": trade_date,
+        })
+    return contracts
+
+
+def fetch_all_contract_chains(trade_date: str = None) -> list[dict]:
+    """扫描全市场合约级数据（用于十倍合约筛选）"""
+    if trade_date is None:
+        trade_date = get_trade_date(1)
+    all_contracts = []
+    # CZCE: 最优数据源（有IV+Delta）
+    logger.info("获取CZCE合约级数据...")
+    for prod_name in CZCE_OPTION_PRODUCTS:
+        try:
+            contracts = fetch_czce_contracts_detail(prod_name, trade_date)
+            all_contracts.extend(contracts)
+            logger.info("  CZCE %s: %d 合约", prod_name, len(contracts))
+        except Exception as e:
+            logger.error("CZCE %s 合约数据异常: %s", prod_name, e)
+    # SHFE: 有IV但无Delta
+    logger.info("获取SHFE合约级数据...")
+    for prod_name in SHFE_OPTION_PRODUCTS:
+        try:
+            contracts = fetch_shfe_contracts_detail(prod_name, trade_date)
+            all_contracts.extend(contracts)
+            logger.info("  SHFE %s: %d 合约", prod_name, len(contracts))
+        except Exception as e:
+            logger.error("SHFE %s 合约数据异常: %s", prod_name, e)
+    # GFEX/DCE: 无合约级数据，跳过
+    logger.info("GFEX/DCE无合约级IV数据，跳过")
+    logger.info("合约级扫描完成: 共 %d 合约", len(all_contracts))
+    return all_contracts
+
+
+# ═══════════════════════════════════════════════════════════════
+# 历史IV缓存（用于IV百分位计算）
+# ═══════════════════════════════════════════════════════════════
+
+IV_HISTORY_FILE = Path(__file__).parent.parent / "data" / "iv_history.json"
+
+
+def load_iv_history() -> dict:
+    """加载历史IV缓存"""
+    if IV_HISTORY_FILE.exists():
+        try:
+            with open(IV_HISTORY_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            logger.warning("加载IV历史缓存失败: %s", e)
+    return {}
+
+
+def save_iv_history(history: dict) -> None:
+    """保存历史IV缓存"""
+    IV_HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        with open(IV_HISTORY_FILE, "w", encoding="utf-8") as f:
+            json.dump(history, f, ensure_ascii=False, indent=2)
+        logger.info("IV历史缓存已保存: %s (%d 品种)", IV_HISTORY_FILE, len(history))
+    except Exception as e:
+        logger.error("保存IV历史缓存失败: %s", e)
+
+
+def update_iv_history(current_ivs: list[dict], trade_date: str) -> dict:
+    """更新历史IV缓存并返回更新后的数据
+
+    current_ivs: scan_all_iv()返回的records
+    trade_date: 当前交易日
+    """
+    history = load_iv_history()
+    for item in current_ivs:
+        key = f"{item['product_name']}_{item['exchange']}"
+        if key not in history:
+            history[key] = {"product_name": item["product_name"],
+                            "exchange": item["exchange"], "iv_series": {}}
+        if item.get("iv") is not None:
+            history[key]["iv_series"][trade_date] = item["iv"]
+    # 清理超过365天的旧数据
+    cutoff = (datetime.now() - timedelta(days=365)).strftime("%Y%m%d")
+    for key in history:
+        series = history[key].get("iv_series", {})
+        old_dates = [d for d in series if d < cutoff]
+        for d in old_dates:
+            del series[d]
+    save_iv_history(history)
+    return history
+
+
+def calc_iv_percentile_from_history(product_name: str, exchange: str,
+                                     current_iv: float, history: dict) -> float:
+    """从历史缓存计算IV百分位（0-100）"""
+    if current_iv is None or np.isnan(current_iv):
+        return np.nan
+    key = f"{product_name}_{exchange}"
+    if key not in history:
+        return np.nan
+    series = history[key].get("iv_series", {})
+    hist_ivs = [v for v in series.values() if v is not None]
+    if len(hist_ivs) < 5:
+        return np.nan
+    arr = np.array(hist_ivs)
+    rank = float((arr < current_iv).sum() / len(arr) * 100)
+    return round(rank, 1)
+
+
+# ═══════════════════════════════════════════════════════════════
 # 统一扫描入口
 # ═══════════════════════════════════════════════════════════════
 
-def scan_all_iv(trade_date: str = None) -> pd.DataFrame:
+def scan_all_iv(trade_date: str = None, calc_percentile: bool = True) -> pd.DataFrame:
     """
     全市场商品期权IV扫描（统一入口）。
     trade_date: 'YYYYMMDD'，默认最近交易日
-    返回: DataFrame 含 product_name/product_code/exchange/group/iv/iv_source/delta/volume/open_interest/trade_date
+    calc_percentile: 是否计算IV百分位（需要历史缓存）
+    返回: DataFrame 含 product_name/product_code/exchange/group/iv/iv_percentile/iv_source/delta/volume/open_interest/trade_date
     """
     if trade_date is None:
         trade_date = get_trade_date(1)
@@ -374,6 +662,16 @@ def scan_all_iv(trade_date: str = None) -> pd.DataFrame:
 
     df = pd.DataFrame(all_results)
     if not df.empty:
+        # 更新历史IV缓存并计算百分位
+        if calc_percentile:
+            logger.info("更新IV历史缓存并计算百分位...")
+            history = update_iv_history(df.to_dict("records"), trade_date)
+            df["iv_percentile"] = df.apply(
+                lambda r: calc_iv_percentile_from_history(
+                    r["product_name"], r["exchange"], r["iv"], history), axis=1)
+        else:
+            df["iv_percentile"] = np.nan
+
         df = df.sort_values("iv", na_position="last").reset_index(drop=True)
         logger.info("扫描完成: %d 品种，%d 有IV，%d 无IV",
                      len(df), df["iv"].notna().sum(), df["iv"].isna().sum())
