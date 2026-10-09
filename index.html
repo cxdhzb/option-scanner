@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>商品期权IV扫描报告 - 20261009</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0d1117; color: #e6edf3; font-family: -apple-system, 'Segoe UI', sans-serif; line-height: 1.6; }
+.container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+h1 { font-size: 1.8em; margin-bottom: 8px; color: #ff6a00; }
+h2 { font-size: 1.3em; margin: 24px 0 12px; color: #e6edf3; border-bottom: 1px solid #30363d; padding-bottom: 6px; }
+.subtitle { color: #8b949e; font-size: 0.9em; margin-bottom: 20px; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.stat-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px; }
+.stat-card .label { color: #8b949e; font-size: 0.85em; }
+.stat-card .value { font-size: 1.6em; font-weight: 700; color: #ff6a00; }
+.stat-card .sub { color: #8b949e; font-size: 0.8em; }
+table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+th { background: #161b22; color: #8b949e; font-size: 0.85em; text-transform: uppercase; padding: 10px 12px; text-align: left; border-bottom: 2px solid #30363d; }
+td { padding: 8px 12px; border-bottom: 1px solid #30363d; font-size: 0.9em; }
+tr:hover { background: #161b22; }
+.iv-cell { font-weight: 700; font-size: 1.05em; }
+.iv-bar { height: 4px; border-radius: 2px; margin-top: 2px; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75em; font-weight: 600; }
+.tag-low { background: rgba(63,185,80,0.15); color: #3fb950; }
+.tag-high { background: rgba(179,33,44,0.15); color: #b3212c; }
+.tag-mid { background: rgba(255,106,0,0.15); color: #ff6a00; }
+.group-section { margin-bottom: 16px; }
+.group-header { color: #8b949e; font-size: 0.9em; margin-bottom: 6px; }
+footer { text-align: center; color: #8b949e; font-size: 0.8em; margin-top: 40px; padding: 20px; border-top: 1px solid #30363d; }
+.warning-box { background: rgba(179,33,44,0.1); border: 1px solid #b3212c; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; color: #ffd166; font-size: 0.85em; }
+h3 { font-size: 1.1em; margin: 16px 0 8px; color: #e6edf3; }
+.risk-extreme { background: rgba(179,33,44,0.2); border-left: 3px solid #b3212c; }
+.risk-high { background: rgba(255,106,0,0.1); border-left: 3px solid #ff6a00; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>商品期权IV扫描报告</h1>
+<p class="subtitle">交易日: 20261009 | 扫描时间: 2026-10-09 07:56:12 | 数据仅供研究参考，不构成投资建议</p>
+
+<div class="warning-box">
+⚠️ 本报告数据来自公开交易所接口，仅供学术研究参考，不构成任何投资建议。期权交易具有高风险，请谨慎决策。
+</div>
+
+<h2>市场概览</h2>
+<div class="stats-grid">
+<div class="stat-card">
+  <div class="label">扫描品种</div>
+  <div class="value">35</div>
+  <div class="sub">有IV: 31 | 无IV: 4</div>
+</div>
+<div class="stat-card">
+  <div class="label">IV中位数</div>
+  <div class="value">23.03%</div>
+  <div class="sub">均值: 27.57%</div>
+</div>
+<div class="stat-card">
+  <div class="label">最低IV</div>
+  <div class="value" style="color: #3fb950">10.4%</div>
+  <div class="sub">花生</div>
+</div>
+<div class="stat-card">
+  <div class="label">最高IV</div>
+  <div class="value" style="color: #b3212c">75.95%</div>
+  <div class="sub">原油</div>
+</div>
+<div class="stat-card">
+  <div class="label">低票价品种</div>
+  <div class="value" style="color: #3fb950">19</div>
+  <div class="sub">IV < 25.0%</div>
+</div>
+<div class="stat-card">
+  <div class="label">高波动品种</div>
+  <div class="value" style="color: #b3212c">4</div>
+  <div class="sub">IV > 50%</div>
+</div>
+
+<div class="stat-card">
+  <div class="label">十倍候选合约</div>
+  <div class="value" style="color: #ff6a00">6</div>
+  <div class="sub">近月0 / 远月6</div>
+</div>
+
+
+<div class="stat-card">
+  <div class="label">极高IV警示</div>
+  <div class="value" style="color: #b3212c">7</div>
+  <div class="sub">极高0 / 高7</div>
+</div>
+
+</div>
+
+<h2>低票价品种（IV < 25.0%）</h2>
+<p style="color: #8b949e; font-size: 0.85em; margin-bottom: 8px;">
+💡 低IV = "低票价"：期权权利金便宜，买方建仓成本低，若后续RV飙升则收益可观
+</p>
+<table>
+<thead><tr><th>#</th><th>品种</th><th>交易所</th><th>板块</th><th>IV(%)</th><th>IV百分位</th><th>IV来源</th><th>成交量</th><th>持仓量</th></tr></thead>
+<tbody>
+
+<tr>
+  <td>1</td>
+  <td><strong>花生</strong></td>
+  <td>CZCE</td>
+  <td>农产品</td>
+  <td class="iv-cell" style="color: #3fb950">10.4%</td>
+  <td>-</td>
+  <td><span style="font-size:0.8em;color:#8b949e">option_hist_czce</span></td>
+  <td>69,825</td>
+  <td>119,578</td>
+</tr>
+
+<tr>
+  <td>2</td>
+  <td><strong>棉花</strong></td>
+  <td>CZCE</td>
+  <td>农产品</td>
+  <td class="iv-cell" style="color: #3fb950">11.4%</td>
+  <td>-</td>
+  <td><span style="font-size:0.8em;color:#8b949e">option_hist_czce</span></td>
+  <td>319,406</td>
+  <td>737,866</td>
+</tr>
+
+<tr>
+  <td>3</td>
+  <td><strong>螺纹钢</strong></td>
+  <td>SHFE</td>
+  <td>黑色</td>
+  <td class="iv-cell" style="color: #3fb950">12.07%</td>
+  <td>-</td>
+  <td><span style="font-size:0.8em;color:#8b949e">option_vol_shfe</span></td>
+  <td>56,220</td>
+  <td>165,366</td>
+</tr>
+
+<tr>
+  <td>4</td>
+  <td><strong>白糖</strong></td>
+  <td>CZCE</td>
+  <td>农产品</td>
+  <td class="iv-cell" style="color: #3fb950">12.23%</td>
+  <td>-</td>
+  <td><span style="font-size:0.8em;color:#8b949e">option_hist_czce</span></td>
+  <td>285,155</td>
+  <td>591,409</td>
+</tr>
+
+<tr>
+  <td>5</td>
+  <td><strong>锰硅</strong></td>
+  <td>CZCE</td>
+  <td>黑色</td>
+  <td class="iv-cell" style="color: #3fb950">13.04%</td>
+  <td>-</td>
+  <td><span style="font-size:0.8em;color:#8b949e">option_hist_czce</span></td>
+  <td>134,757</td>
+  <td>133,183</td>
+</tr>
+
+<tr>
+  <td>6</td>
+  <td><strong>不锈钢</strong></td>
+  <td>SHFE</td>
+  <td>其他</td>
+  <td class="iv-cell" style="color: #3fb950">13.97%</td>
+  <td>-</td>
+  <td><span style="font-size:0.8em;color:#8b949e">option_vol_shfe</span></td>
+  <td>2,595</td>
+  <td>4,398</td>
+</tr>
+
+<tr>
+  <td>7</td>
+  <td><strong>尿素</strong></td>
+  <td>CZCE</td>
+  <td>能化</td>
+  <td class="iv-cell" style="color: #3fb950">14.72%</td>
+  <td>-</td>
+  <td><span style="font-size:0.8em;color:#8b949e">option_hist_czce</span></td>
+  <td>103,484</td>
+  <td>155,995</td>
+</tr>
+
+<tr>
+  <td>8</td>
+  <td><strong>菜籽油</strong></td>
+  <td>CZCE</td>
+  <td>其他</td>
+  <td class="iv-cell" style="color: #3fb950">15.01%</td>
+  <td>-</td>
+  <td><span style="font-size:0.8em;color:#8b949e">option_hist_czce</span></td>
+  <td>95,262</td>
+  <td>102,024</td>
+</tr>
+
+<tr>
+  <td>9</td>
+  <td><strong>菜籽粕</strong></td>
+  <td>CZCE</td>
+  <td>农产品</td>
+  <td class="iv-cell" style="color: #3fb950">16.28%</td>
+  <td>-</td>
+  <td><span style="font-size:0.8em;color:#8b949e">option_hist_czce</span></td>
+  <td>187,880</td>
+  <td>297,143</td>
+</tr>
+
+<tr>
+  <td>10</td>
+  <td><strong>氧化铝</strong></td>
+  <td>SHFE</td>
+  <td>有色</td>
+  <td class="iv-cell" style="color: #3fb950">16.69%</td>
+  <td>-</td>
+  <td><span style="font-size:0.8em;color:#8b949e">option_vol_shfe</span></td>
+  <td>27,839</td>
+  <td>45,592</td>
+</tr>
+
+<tr>
+  <td>11</td>
+  <td><strong>铜</strong></td>
+  <td>SHFE</td>
+  <td>有色</td>
+  <td class="iv-cell" style="color: #3fb950">18.62%</td>
+  <td>-</td>
+  <td><span style="font-size:0.8em;color:#8b949e">option_vol_shfe</span></td>
+  <td>144,402</td>
+  <td>84,020</td>
+</tr>
+
+<tr>
+  <td>12</td>
+  <td><strong>纸浆</strong></td>
+  <td>SHFE</td>
+  <td>能化</td>
+  <td class="iv-cell" style="color: #3fb950">19.42%</td>
+  <td>-</td>
+  <td><span style="font-size:0.8em;color:#8b949e">option_vol_shfe</span></td>
+  <td>21,631</td>
+  <td>46,925</td>
+</tr>
+
+<tr>
+  <td>13</td>
+  <td><strong>红枣</strong></td>
+  <td>CZCE</td>
+  <td>农产品</td>
+  <td class="iv-cell" style="color: #3fb950">21.31%</td>
+  <td>-</td>
+  <td><span style="font-size:0.8em;color:#8b949e">option_hist_czce</span></td>
+  <td>78,914</td>
+  <td>168,272</td>
+</tr>
+
+<tr>
+  <td>14</td>
+  <td><strong>工业硅</strong></td>
+  <td>GFEX</td>
+  <td>新能源</td>
+  <td class="iv-cell" style="color: #3fb950">21.83%</td>
+  <td>-</td>
+  <td><span style="font-size:0.8em;color:#8b949e">option_vol_gfex</span></td>
+  <td>-</td>
+  <td>-</td>
+</tr>
+
+<tr>
+  <td>15</td>
+  <td><strong>黄金</strong></td>
+  <td>SHFE</td>
+  <td>贵金属</td>
+  <td class="iv-cell" style="color: #3fb950">23.01%</td>
+  <td>-</td>
+  <td><span style="font-size:0.8em;color:#8b949e">option_vol_shfe</span></td>
+  <td>76,335</td>
+  <td>29,813</td>
+</tr>
+
+<tr>
+  <td>16</td>
+  <td><strong>苹果</strong></td>
+  <td>CZCE</td>
+  <td>农产品</td>
+  <td class="iv-cell" style="color: #3fb950">23.03%</td>
+  <td>-</td>
+  <td><span style="font-size:0.8em;color:#8b949e">option_hist_czce</span></td>
+  <td>32,047</td>
+  <td>41,635</td>
+</tr>
+
+<tr>
+  <td>17</td>
+  <td><strong>玻璃</strong></td>
+  <td>CZCE</td>
+  <td>能化</td>
+  <td class="iv-cell" style="color: #3fb950">24.13%</td>
+  <td>-</td>
+  <td><span style="font-size:0.8em;color:#8b949e">option_hist_czce</span></td>
+  <td>426,215</td>
+  <td>740,141</td>
+</tr>
+
+<tr>
+  <td>18</td>
+  <td><strong>烧碱</strong></td>
+  <td>CZCE</td>
+  <td>能化</td>
+  <td class="iv-cell" style="color: #3fb950">24.28%</td>
+  <td>-</td>
+  <td><span style="font-size:0.8em;color:#8b949e">option_hist_czce</span></td>
+  <td>122,210</td>
+  <td>182,885</td>
+</tr>
+
+<tr>
+  <td>19</td>
+  <td><strong>硅铁</strong></td>
+  <td>CZCE</td>
+  <td>黑色</td>
+  <td class="iv-cell" style="color: #3fb950">24.74%</td>
+  <td>-</td>
+  <td><span style="font-size:0.8em;color:#8b949e">option_hist_czce</span></td>
+  <td>80,489</td>
+  <td>108,061</td>
+</tr>
+
+</tbody>
+</table>
+
+<h2>全品种IV排名</h2>
+<table>
+<thead><tr><th>#</th><th>品种</th><th>交易所</th><th>板块</th><th>IV(%)</th><th>IV百分位</th><th>IV柱状图</th><th>成交量</th><th>持仓量</th></tr></thead>
+<tbody>
+
+
+<tr>
+  <td>1</td>
+  <td><strong>花生</strong></td>
+  <td>CZCE</td>
+  <td>农产品</td>
+  <td class="iv-cell" style="color: #3fb950">10.4%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 13.0%; background: #3fb950"></div>
+  </td>
+  <td>69,825</td>
+  <td>119,578</td>
+</tr>
+
+
+
+<tr>
+  <td>2</td>
+  <td><strong>棉花</strong></td>
+  <td>CZCE</td>
+  <td>农产品</td>
+  <td class="iv-cell" style="color: #3fb950">11.4%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 14.250000000000002%; background: #3fb950"></div>
+  </td>
+  <td>319,406</td>
+  <td>737,866</td>
+</tr>
+
+
+
+<tr>
+  <td>3</td>
+  <td><strong>螺纹钢</strong></td>
+  <td>SHFE</td>
+  <td>黑色</td>
+  <td class="iv-cell" style="color: #3fb950">12.07%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 15.0875%; background: #3fb950"></div>
+  </td>
+  <td>56,220</td>
+  <td>165,366</td>
+</tr>
+
+
+
+<tr>
+  <td>4</td>
+  <td><strong>白糖</strong></td>
+  <td>CZCE</td>
+  <td>农产品</td>
+  <td class="iv-cell" style="color: #3fb950">12.23%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 15.287500000000001%; background: #3fb950"></div>
+  </td>
+  <td>285,155</td>
+  <td>591,409</td>
+</tr>
+
+
+
+<tr>
+  <td>5</td>
+  <td><strong>锰硅</strong></td>
+  <td>CZCE</td>
+  <td>黑色</td>
+  <td class="iv-cell" style="color: #3fb950">13.04%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 16.299999999999997%; background: #3fb950"></div>
+  </td>
+  <td>134,757</td>
+  <td>133,183</td>
+</tr>
+
+
+
+<tr>
+  <td>6</td>
+  <td><strong>不锈钢</strong></td>
+  <td>SHFE</td>
+  <td>其他</td>
+  <td class="iv-cell" style="color: #3fb950">13.97%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 17.4625%; background: #3fb950"></div>
+  </td>
+  <td>2,595</td>
+  <td>4,398</td>
+</tr>
+
+
+
+<tr>
+  <td>7</td>
+  <td><strong>尿素</strong></td>
+  <td>CZCE</td>
+  <td>能化</td>
+  <td class="iv-cell" style="color: #3fb950">14.72%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 18.4%; background: #3fb950"></div>
+  </td>
+  <td>103,484</td>
+  <td>155,995</td>
+</tr>
+
+
+
+<tr>
+  <td>8</td>
+  <td><strong>菜籽油</strong></td>
+  <td>CZCE</td>
+  <td>其他</td>
+  <td class="iv-cell" style="color: #3fb950">15.01%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 18.7625%; background: #3fb950"></div>
+  </td>
+  <td>95,262</td>
+  <td>102,024</td>
+</tr>
+
+
+
+<tr>
+  <td>9</td>
+  <td><strong>菜籽粕</strong></td>
+  <td>CZCE</td>
+  <td>农产品</td>
+  <td class="iv-cell" style="color: #3fb950">16.28%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 20.35%; background: #3fb950"></div>
+  </td>
+  <td>187,880</td>
+  <td>297,143</td>
+</tr>
+
+
+
+<tr>
+  <td>10</td>
+  <td><strong>氧化铝</strong></td>
+  <td>SHFE</td>
+  <td>有色</td>
+  <td class="iv-cell" style="color: #3fb950">16.69%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 20.8625%; background: #3fb950"></div>
+  </td>
+  <td>27,839</td>
+  <td>45,592</td>
+</tr>
+
+
+
+<tr>
+  <td>11</td>
+  <td><strong>铜</strong></td>
+  <td>SHFE</td>
+  <td>有色</td>
+  <td class="iv-cell" style="color: #3fb950">18.62%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 23.275000000000002%; background: #3fb950"></div>
+  </td>
+  <td>144,402</td>
+  <td>84,020</td>
+</tr>
+
+
+
+<tr>
+  <td>12</td>
+  <td><strong>纸浆</strong></td>
+  <td>SHFE</td>
+  <td>能化</td>
+  <td class="iv-cell" style="color: #3fb950">19.42%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 24.275000000000002%; background: #3fb950"></div>
+  </td>
+  <td>21,631</td>
+  <td>46,925</td>
+</tr>
+
+
+
+<tr>
+  <td>13</td>
+  <td><strong>红枣</strong></td>
+  <td>CZCE</td>
+  <td>农产品</td>
+  <td class="iv-cell" style="color: #3fb950">21.31%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 26.637499999999996%; background: #3fb950"></div>
+  </td>
+  <td>78,914</td>
+  <td>168,272</td>
+</tr>
+
+
+
+<tr>
+  <td>14</td>
+  <td><strong>工业硅</strong></td>
+  <td>GFEX</td>
+  <td>新能源</td>
+  <td class="iv-cell" style="color: #3fb950">21.83%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 27.287499999999998%; background: #3fb950"></div>
+  </td>
+  <td>-</td>
+  <td>-</td>
+</tr>
+
+
+
+<tr>
+  <td>15</td>
+  <td><strong>黄金</strong></td>
+  <td>SHFE</td>
+  <td>贵金属</td>
+  <td class="iv-cell" style="color: #3fb950">23.01%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 28.762500000000003%; background: #3fb950"></div>
+  </td>
+  <td>76,335</td>
+  <td>29,813</td>
+</tr>
+
+
+
+<tr>
+  <td>16</td>
+  <td><strong>苹果</strong></td>
+  <td>CZCE</td>
+  <td>农产品</td>
+  <td class="iv-cell" style="color: #3fb950">23.03%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 28.787499999999998%; background: #3fb950"></div>
+  </td>
+  <td>32,047</td>
+  <td>41,635</td>
+</tr>
+
+
+
+<tr>
+  <td>17</td>
+  <td><strong>玻璃</strong></td>
+  <td>CZCE</td>
+  <td>能化</td>
+  <td class="iv-cell" style="color: #3fb950">24.13%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 30.162499999999998%; background: #3fb950"></div>
+  </td>
+  <td>426,215</td>
+  <td>740,141</td>
+</tr>
+
+
+
+<tr>
+  <td>18</td>
+  <td><strong>烧碱</strong></td>
+  <td>CZCE</td>
+  <td>能化</td>
+  <td class="iv-cell" style="color: #3fb950">24.28%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 30.349999999999998%; background: #3fb950"></div>
+  </td>
+  <td>122,210</td>
+  <td>182,885</td>
+</tr>
+
+
+
+<tr>
+  <td>19</td>
+  <td><strong>硅铁</strong></td>
+  <td>CZCE</td>
+  <td>黑色</td>
+  <td class="iv-cell" style="color: #3fb950">24.74%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 30.924999999999997%; background: #3fb950"></div>
+  </td>
+  <td>80,489</td>
+  <td>108,061</td>
+</tr>
+
+
+
+<tr>
+  <td>20</td>
+  <td><strong>纯碱</strong></td>
+  <td>CZCE</td>
+  <td>能化</td>
+  <td class="iv-cell" style="color: #ff6a00">25.09%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 31.362499999999997%; background: #ff6a00"></div>
+  </td>
+  <td>683,952</td>
+  <td>738,903</td>
+</tr>
+
+
+
+<tr>
+  <td>21</td>
+  <td><strong>对二甲苯</strong></td>
+  <td>CZCE</td>
+  <td>能化</td>
+  <td class="iv-cell" style="color: #ff6a00">28.76%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 35.95%; background: #ff6a00"></div>
+  </td>
+  <td>10,979</td>
+  <td>15,712</td>
+</tr>
+
+
+
+<tr>
+  <td>22</td>
+  <td><strong>锡</strong></td>
+  <td>SHFE</td>
+  <td>有色</td>
+  <td class="iv-cell" style="color: #ff6a00">30.05%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 37.5625%; background: #ff6a00"></div>
+  </td>
+  <td>86,827</td>
+  <td>17,018</td>
+</tr>
+
+
+
+<tr>
+  <td>23</td>
+  <td><strong>瓶片</strong></td>
+  <td>CZCE</td>
+  <td>其他</td>
+  <td class="iv-cell" style="color: #ff6a00">30.32%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 37.9%; background: #ff6a00"></div>
+  </td>
+  <td>1,364</td>
+  <td>4,724</td>
+</tr>
+
+
+
+<tr>
+  <td>24</td>
+  <td><strong>短纤</strong></td>
+  <td>CZCE</td>
+  <td>能化</td>
+  <td class="iv-cell" style="color: #ff6a00">32.31%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 40.3875%; background: #ff6a00"></div>
+  </td>
+  <td>8,628</td>
+  <td>16,594</td>
+</tr>
+
+
+
+<tr>
+  <td>25</td>
+  <td><strong>甲醇</strong></td>
+  <td>CZCE</td>
+  <td>能化</td>
+  <td class="iv-cell" style="color: #ff6a00">34.66%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 43.324999999999996%; background: #ff6a00"></div>
+  </td>
+  <td>4,302,584</td>
+  <td>1,322,955</td>
+</tr>
+
+
+
+<tr>
+  <td>26</td>
+  <td><strong>白银</strong></td>
+  <td>SHFE</td>
+  <td>贵金属</td>
+  <td class="iv-cell" style="color: #ffd166">37.07%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 46.3375%; background: #ffd166"></div>
+  </td>
+  <td>258,244</td>
+  <td>80,736</td>
+</tr>
+
+
+
+<tr>
+  <td>27</td>
+  <td><strong>PTA</strong></td>
+  <td>CZCE</td>
+  <td>能化</td>
+  <td class="iv-cell" style="color: #ffd166">40.6%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 50.75000000000001%; background: #ffd166"></div>
+  </td>
+  <td>1,156,918</td>
+  <td>429,960</td>
+</tr>
+
+
+
+<tr>
+  <td>28</td>
+  <td><strong>动力煤</strong></td>
+  <td>CZCE</td>
+  <td>其他</td>
+  <td class="iv-cell" style="color: #b3212c">53.93%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 67.4125%; background: #b3212c"></div>
+  </td>
+  <td>-</td>
+  <td>-</td>
+</tr>
+
+
+
+<tr>
+  <td>29</td>
+  <td><strong>碳酸锂</strong></td>
+  <td>GFEX</td>
+  <td>新能源</td>
+  <td class="iv-cell" style="color: #b3212c">54.15%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 67.6875%; background: #b3212c"></div>
+  </td>
+  <td>-</td>
+  <td>-</td>
+</tr>
+
+
+
+<tr>
+  <td>30</td>
+  <td><strong>燃料油</strong></td>
+  <td>SHFE</td>
+  <td>能化</td>
+  <td class="iv-cell" style="color: #b3212c">75.68%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 94.60000000000001%; background: #b3212c"></div>
+  </td>
+  <td>171,933</td>
+  <td>109,580</td>
+</tr>
+
+
+
+<tr>
+  <td>31</td>
+  <td><strong>原油</strong></td>
+  <td>SHFE</td>
+  <td>能化</td>
+  <td class="iv-cell" style="color: #b3212c">75.95%</td>
+  <td>-</td>
+  <td>
+    <div class="iv-bar" style="width: 94.93750000000001%; background: #b3212c"></div>
+  </td>
+  <td>237,570</td>
+  <td>63,088</td>
+</tr>
+
+
+
+
+
+
+
+
+
+
+</tbody>
+</table>
+
+<h2>板块统计</h2>
+<table>
+<thead><tr><th>板块</th><th>品种数</th><th>平均IV</th><th>最低IV</th><th>最高IV</th><th>最低品种</th><th>最高品种</th></tr></thead>
+<tbody>
+
+<tr>
+  <td><strong>农产品</strong></td>
+  <td>6</td>
+  <td>15.78%</td>
+  <td style="color:#3fb950">10.4%</td>
+  <td style="color:#b3212c">23.03%</td>
+  <td>花生</td>
+  <td>苹果</td>
+</tr>
+
+<tr>
+  <td><strong>能化</strong></td>
+  <td>11</td>
+  <td>35.96%</td>
+  <td style="color:#3fb950">14.72%</td>
+  <td style="color:#b3212c">75.95%</td>
+  <td>尿素</td>
+  <td>原油</td>
+</tr>
+
+<tr>
+  <td><strong>黑色</strong></td>
+  <td>3</td>
+  <td>16.62%</td>
+  <td style="color:#3fb950">12.07%</td>
+  <td style="color:#b3212c">24.74%</td>
+  <td>螺纹钢</td>
+  <td>硅铁</td>
+</tr>
+
+<tr>
+  <td><strong>有色</strong></td>
+  <td>3</td>
+  <td>21.79%</td>
+  <td style="color:#3fb950">16.69%</td>
+  <td style="color:#b3212c">30.05%</td>
+  <td>氧化铝</td>
+  <td>锡</td>
+</tr>
+
+<tr>
+  <td><strong>贵金属</strong></td>
+  <td>2</td>
+  <td>30.04%</td>
+  <td style="color:#3fb950">23.01%</td>
+  <td style="color:#b3212c">37.07%</td>
+  <td>黄金</td>
+  <td>白银</td>
+</tr>
+
+<tr>
+  <td><strong>新能源</strong></td>
+  <td>2</td>
+  <td>37.99%</td>
+  <td style="color:#3fb950">21.83%</td>
+  <td style="color:#b3212c">54.15%</td>
+  <td>工业硅</td>
+  <td>碳酸锂</td>
+</tr>
+
+</tbody>
+</table>
+
+
+<h2>🎯 十倍潜力合约筛选</h2>
+<p style="color: #8b949e; font-size: 0.85em; margin-bottom: 8px;">
+💡 筛选逻辑：近月虚值5%~10%(Delta 0.20~0.35) / 远月虚值12%~18%(Delta 0.25~0.40) | 蒙特卡洛模拟(正态+Levy α=1.8) | 十倍概率 ≥ 2%
+</p>
+<div class="stats-grid" style="margin-bottom: 16px;">
+<div class="stat-card">
+  <div class="label">筛选合约总数</div>
+  <div class="value">6300</div>
+</div>
+<div class="stat-card">
+  <div class="label">近月候选</div>
+  <div class="value" style="color: #ff6a00">0</div>
+</div>
+<div class="stat-card">
+  <div class="label">远月候选</div>
+  <div class="value" style="color: #ffd166">6</div>
+</div>
+<div class="stat-card">
+  <div class="label">低票价加分</div>
+  <div class="value" style="color: #3fb950">4</div>
+</div>
+</div>
+
+
+
+
+<h3 style="color: #ffd166; margin-top: 16px;">远月合约（>35天到期，时间损耗慢）</h3>
+<table>
+<thead><tr><th>#</th><th>合约</th><th>品种</th><th>行权价</th><th>虚值%</th><th>天数</th><th>IV(%)</th><th>Delta</th><th>权利金</th><th>十倍概率(正态)</th><th>十倍概率(Levy)</th><th>低票价</th></tr></thead>
+<tbody>
+
+<tr>
+  <td>1</td>
+  <td style="font-size:0.85em;"><strong>au2708C1072</strong></td>
+  <td>黄金</td>
+  <td>1072.0</td>
+  <td>12.6%</td>
+  <td>295d</td>
+  <td class="iv-cell" style="color: #3fb950">23.01%</td>
+  <td>-</td>
+  <td>31.26</td>
+  <td>1.3%</td>
+  <td style="color: #ff6a00; font-weight:700;">2.6%</td>
+  <td><span class="tag tag-low">✓</span></td>
+</tr>
+
+<tr>
+  <td>2</td>
+  <td style="font-size:0.85em;"><strong>FG705C1060</strong></td>
+  <td>玻璃</td>
+  <td>1060.0</td>
+  <td>15.2%</td>
+  <td>203d</td>
+  <td class="iv-cell" style="color: #ff6a00">26.46%</td>
+  <td>0.3132</td>
+  <td>6.443</td>
+  <td>2.2%</td>
+  <td style="color: #ff6a00; font-weight:700;">2.3%</td>
+  <td><span class="tag tag-low">✓</span></td>
+</tr>
+
+<tr>
+  <td>3</td>
+  <td style="font-size:0.85em;"><strong>SA707C1220</strong></td>
+  <td>纯碱</td>
+  <td>1220.0</td>
+  <td>13.0%</td>
+  <td>264d</td>
+  <td class="iv-cell" style="color: #ff6a00">26.12%</td>
+  <td>0.3352</td>
+  <td>13.627</td>
+  <td>1.4%</td>
+  <td style="color: #ff6a00; font-weight:700;">2.1%</td>
+  <td>-</td>
+</tr>
+
+<tr>
+  <td>4</td>
+  <td style="font-size:0.85em;"><strong>CJ705C7900</strong></td>
+  <td>红枣</td>
+  <td>7900.0</td>
+  <td>12.9%</td>
+  <td>203d</td>
+  <td class="iv-cell" style="color: #3fb950">21.98%</td>
+  <td>0.2554</td>
+  <td>43.5309</td>
+  <td>2.4%</td>
+  <td style="color: #ff6a00; font-weight:700;">2.1%</td>
+  <td><span class="tag tag-low">✓</span></td>
+</tr>
+
+<tr>
+  <td>5</td>
+  <td style="font-size:0.85em;"><strong>SA706C1240</strong></td>
+  <td>纯碱</td>
+  <td>1240.0</td>
+  <td>14.8%</td>
+  <td>234d</td>
+  <td class="iv-cell" style="color: #ff6a00">27.12%</td>
+  <td>0.2996</td>
+  <td>11.2836</td>
+  <td>1.9%</td>
+  <td style="color: #ff6a00; font-weight:700;">2.0%</td>
+  <td>-</td>
+</tr>
+
+<tr>
+  <td>6</td>
+  <td style="font-size:0.85em;"><strong>au2704C1088</strong></td>
+  <td>黄金</td>
+  <td>1088.0</td>
+  <td>14.3%</td>
+  <td>173d</td>
+  <td class="iv-cell" style="color: #3fb950">23.01%</td>
+  <td>-</td>
+  <td>11.44</td>
+  <td>2.6%</td>
+  <td style="color: #ff6a00; font-weight:700;">2.0%</td>
+  <td><span class="tag tag-low">✓</span></td>
+</tr>
+
+</tbody>
+</table>
+
+
+
+
+<h2>⚠️ 极高IV风险警示</h2>
+<p style="color: #8b949e; font-size: 0.85em; margin-bottom: 8px;">
+⚠️ IV百分位≥80%或IV>50%或IV溢价>1.5倍中位数，标记顶部反转信号，卖方机会但需警惕IV崩塌
+</p>
+<table>
+<thead><tr><th>#</th><th>品种</th><th>交易所</th><th>板块</th><th>IV(%)</th><th>IV百分位</th><th>IV溢价</th><th>风险等级</th><th>反转信号</th><th>触发条件</th></tr></thead>
+<tbody>
+
+<tr>
+  <td>1</td>
+  <td><strong>甲醇</strong></td>
+  <td>CZCE</td>
+  <td>能化</td>
+  <td class="iv-cell" style="color: #b3212c">34.66%</td>
+  <td>-</td>
+  <td>1.5x</td>
+  <td><span class="tag tag-mid">高</span></td>
+  <td>-</td>
+  <td style="font-size:0.8em;">
+    
+    <span class="tag tag-mid">溢价>1.5x</span> 
+    
+  </td>
+</tr>
+
+<tr>
+  <td>2</td>
+  <td><strong>白银</strong></td>
+  <td>SHFE</td>
+  <td>贵金属</td>
+  <td class="iv-cell" style="color: #b3212c">37.07%</td>
+  <td>-</td>
+  <td>1.61x</td>
+  <td><span class="tag tag-mid">高</span></td>
+  <td>-</td>
+  <td style="font-size:0.8em;">
+    
+    <span class="tag tag-mid">溢价>1.5x</span> 
+    
+  </td>
+</tr>
+
+<tr>
+  <td>3</td>
+  <td><strong>PTA</strong></td>
+  <td>CZCE</td>
+  <td>能化</td>
+  <td class="iv-cell" style="color: #b3212c">40.6%</td>
+  <td>-</td>
+  <td>1.76x</td>
+  <td><span class="tag tag-mid">高</span></td>
+  <td>-</td>
+  <td style="font-size:0.8em;">
+    
+    <span class="tag tag-mid">溢价>1.5x</span> 
+    
+  </td>
+</tr>
+
+<tr>
+  <td>4</td>
+  <td><strong>动力煤</strong></td>
+  <td>CZCE</td>
+  <td>其他</td>
+  <td class="iv-cell" style="color: #b3212c">53.93%</td>
+  <td>-</td>
+  <td>2.34x</td>
+  <td><span class="tag tag-mid">高</span></td>
+  <td>-</td>
+  <td style="font-size:0.8em;">
+    
+    <span class="tag tag-mid">溢价>1.5x</span> 
+    <span class="tag tag-high">IV>50%</span>
+  </td>
+</tr>
+
+<tr>
+  <td>5</td>
+  <td><strong>碳酸锂</strong></td>
+  <td>GFEX</td>
+  <td>新能源</td>
+  <td class="iv-cell" style="color: #b3212c">54.15%</td>
+  <td>-</td>
+  <td>2.35x</td>
+  <td><span class="tag tag-mid">高</span></td>
+  <td>-</td>
+  <td style="font-size:0.8em;">
+    
+    <span class="tag tag-mid">溢价>1.5x</span> 
+    <span class="tag tag-high">IV>50%</span>
+  </td>
+</tr>
+
+<tr>
+  <td>6</td>
+  <td><strong>燃料油</strong></td>
+  <td>SHFE</td>
+  <td>能化</td>
+  <td class="iv-cell" style="color: #b3212c">75.68%</td>
+  <td>-</td>
+  <td>3.29x</td>
+  <td><span class="tag tag-mid">高</span></td>
+  <td>-</td>
+  <td style="font-size:0.8em;">
+    
+    <span class="tag tag-mid">溢价>1.5x</span> 
+    <span class="tag tag-high">IV>50%</span>
+  </td>
+</tr>
+
+<tr>
+  <td>7</td>
+  <td><strong>原油</strong></td>
+  <td>SHFE</td>
+  <td>能化</td>
+  <td class="iv-cell" style="color: #b3212c">75.95%</td>
+  <td>-</td>
+  <td>3.3x</td>
+  <td><span class="tag tag-mid">高</span></td>
+  <td>-</td>
+  <td style="font-size:0.8em;">
+    
+    <span class="tag tag-mid">溢价>1.5x</span> 
+    <span class="tag tag-high">IV>50%</span>
+  </td>
+</tr>
+
+</tbody>
+</table>
+
+
+<h2>数据来源说明</h2>
+<div style="color: #8b949e; font-size: 0.85em; line-height: 1.8;">
+<p>• <strong>SHFE（上期所）</strong>：option_vol_shfe 接口，合约系列级IV（小数口径×100归一）</p>
+<p>• <strong>CZCE（郑商所）</strong>：option_hist_czce 接口，合约级IV+DELTA（百分数口径），|DELTA-0.5|最小者作平值IV</p>
+<p>• <strong>GFEX（广期所）</strong>：option_vol_gfex 接口，合约系列级IV（百分数口径）</p>
+<p>• <strong>DCE（大商所）</strong>：官网被WAF拦截，降级用新浪合约表（仅行情，无IV数据）</p>
+<p>• IV口径已统一为百分数（%），成交量最大合约系列作主力参考</p>
+</div>
+
+<footer>
+商品期权IV扫描器 | 数据来源: AKShare/各交易所公开接口 | 2026-10-09 07:56:12
+</footer>
+</div>
+</body>
+</html>
